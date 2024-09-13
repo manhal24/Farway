@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Request Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #response {
+            white-space: pre-wrap;
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background: #f9f9f9;
+        }
+        #countdown {
+            font-size: 1.2em;
+            margin-top: 10px;
+            color: #ff0000;
+        }
+    </style>
+    <script>
+        let countdownInterval;
+        let runId = '';
+
+        function startCountdown(duration, display) {
+            let timer = duration, minutes, seconds;
+            countdownInterval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    timer = 0;
+                    clearInterval(countdownInterval);
+                    display.textContent = "Time's up!";
+                }
+            }, 1000);
+        }
+
+        async function sendRequest() {
+            const domain = document.getElementById('domain').value;
+            const responseContainer = document.getElementById('response');
+            const countdownDisplay = document.getElementById('countdown');
+
+            // Start countdown for 120 seconds
+            startCountdown(120, countdownDisplay);
+
+            try {
+                const runResponse = await fetch('https://api.apify.com/v2/acts/lZdFhlvdfg7BFJluY/runs?waitForFinish=120', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer apify_api_hqifBKQQeQff0Wx5GpYlheHtBA3IYw2MCNJ2'
+                    },
+                    body: JSON.stringify({ input: { domain } })
+                });
+
+                const runResult = await runResponse.json();
+                runId = runResult.data.id;
+
+                // Polling for run completion
+                pollRunStatus();
+            } catch (error) {
+                clearInterval(countdownInterval);  // Stop countdown on error
+                responseContainer.textContent = `Error: ${error.message}`;
+            }
+        }
+
+        async function pollRunStatus() {
+            const responseContainer = document.getElementById('response');
+            const countdownDisplay = document.getElementById('countdown');
+
+            const interval = 5000;  // Poll every 5 seconds
+            let timer = 120;  // Total time to poll (in seconds)
+
+            const statusInterval = setInterval(async () => {
+                try {
+                    const statusResponse = await fetch(`https://api.apify.com/v2/acts/lZdFhlvdfg7BFJluY/runs/${runId}`, {
+                        headers: {
+                            'Authorization': 'Bearer apify_api_hqifBKQQeQff0Wx5GpYlheHtBA3IYw2MCNJ2'
+                        }
+                    });
+
+                    const statusResult = await statusResponse.json();
+
+                    if (statusResult.data.status === 'COMPLETED') {
+                        clearInterval(statusInterval);
+                        clearInterval(countdownInterval);
+
+                        // Fetch dataset data
+                        fetchDatasetData(statusResult.data.defaultDatasetId);
+                    } else if (timer <= 0) {
+                        clearInterval(statusInterval);
+                        clearInterval(countdownInterval);
+                        responseContainer.textContent = "Request timed out.";
+                    }
+
+                    timer -= (interval / 1000);  // Reduce timer
+                } catch (error) {
+                    clearInterval(statusInterval);
+                    clearInterval(countdownInterval);
+                    responseContainer.textContent = `Error: ${error.message}`;
+                }
+            }, interval);
+        }
+
+        async function fetchDatasetData(datasetId) {
+            const responseContainer = document.getElementById('response');
+
+            try {
+                const datasetResponse = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items`, {
+                    headers: {
+                        'Authorization': 'Bearer apify_api_hqifBKQQeQff0Wx5GpYlheHtBA3IYw2MCNJ2'
+                    }
+                });
+
+                const datasetResult = await datasetResponse.json();
+                responseContainer.textContent = JSON.stringify(datasetResult, null, 2);
+            } catch (error) {
+                responseContainer.textContent = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>API Request Page</h1>
+    <label for="domain">Enter Domain:</label>
+    <input type="text" id="domain" name="domain" required>
+    <button onclick="sendRequest()">Send Request</button>
+    <div id="countdown">02:00</div>
+    <pre id="response"></pre>
+</body>
+</html>
