@@ -6,8 +6,7 @@ async function startDownload() {
     resultDiv.innerHTML = '';
     loadingDiv.style.display = 'block';
 
-    // Make sure to replace 'YOUR_APIFY_API_TOKEN' with your actual Apify API token
-    const apifyApiUrl = 'https://api.apify.com/v2/actor-tasks/QKSVyK33mh6MeAu4z/runs?token=apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa';
+    const apifyApiUrl = 'https://api.apify.com/v2/actor-tasks/D7laS3Cq1meds1VWx/runs?token=apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa';
 
     const response = await fetch(apifyApiUrl, {
         method: 'POST',
