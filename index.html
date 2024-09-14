@@ -7,85 +7,61 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background-color: #000;
+            color: #fff;
+            text-align: center;
             margin: 0;
-            background-color: #f8f8f8;
+            padding: 0;
         }
         .container {
-            text-align: center;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 50px;
         }
-        input[type="text"] {
-            width: 80%;
+        input {
             padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            width: 60%;
+            border-radius: 5px;
+            border: none;
+            margin-bottom: 20px;
         }
         button {
-            background-color: #ff3e3e;
-            color: #fff;
-            border: none;
             padding: 10px 20px;
-            border-radius: 4px;
+            background-color: #ff0050;
+            color: white;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
         }
-        button:hover {
-            background-color: #e02d2d;
+        #result {
+            margin-top: 40px;
         }
-        #download-btn {
+        .thumbnail {
+            max-width: 300px;
+            border-radius: 10px;
+        }
+        .loading {
             display: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>TikTok Video Downloader</h1>
-        <input type="text" id="tiktok-url" placeholder="Enter TikTok URL">
-        <button id="submit-btn">Download Video</button>
-        <a id="download-btn" href="" target="_blank">Download Video</a>
+
+<div class="container">
+    <h1>TikTok Video Downloader</h1>
+    <p>Paste a TikTok URL and download the video</p>
+    
+    <input type="text" id="tiktokUrl" placeholder="Enter TikTok URL here..." />
+    <button onclick="startDownload()">Download</button>
+    
+    <div id="loading" class="loading">
+        <p>Processing... please wait.</p>
     </div>
-    <script>
-        document.getElementById('submit-btn').addEventListener('click', function() {
-            const url = document.getElementById('tiktok-url').value;
-            fetch('https://ssstik.io/abc?url=dl', {
-                method: 'POST',
-                headers: {
-                    'HX-Request': 'true',
-                    'HX-Trigger': '_gcaptcha_pt',
-                    'HX-Target': 'target',
-                    'HX-Current-URL': 'https://ssstik.io/en-1',
-                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-                },
-                body: new URLSearchParams({
-                    'id': encodeURIComponent(url),
-                    'locale': 'en',
-                    'tt': 'RDY5Z04z'
-                })
-            })
-            .then(response => response.text())
-            .then(text => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(text, 'text/html');
-                const downloadLink = doc.querySelector('a.dl-button.download_link');
-                if (downloadLink) {
-                    document.getElementById('download-btn').href = downloadLink.href;
-                    document.getElementById('download-btn').style.display = 'block';
-                } else {
-                    alert('Unable to find download link.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred.');
-            });
-        });
-    </script>
+
+    <div id="result">
+        <!-- Video cover and download link will be displayed here -->
+    </div>
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
