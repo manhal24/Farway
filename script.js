@@ -6,12 +6,15 @@ async function startDownload() {
     resultDiv.innerHTML = '';
     loadingDiv.style.display = 'block';
 
-    const apifyApiUrl = 'https://api.apify.com/v2/actor-tasks/D7laS3Cq1meds1VWx/runs?token=apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa';
+    // Updated API URL for direct actor run
+    const apifyApiUrl = 'https://api.apify.com/v2/acts/D7laS3Cq1meds1VWx/runs';
 
+    // Sending request with correct headers and body
     const response = await fetch(apifyApiUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa'
         },
         body: JSON.stringify({
             "startUrls": [{ "url": tiktokUrl }]
@@ -19,20 +22,31 @@ async function startDownload() {
     });
 
     const data = await response.json();
+
+    if (data.error) {
+        alert(`Error: ${data.error.message}`);
+        loadingDiv.style.display = 'none';
+        return;
+    }
+
     const runId = data.data.id;
 
-    // Wait 30 seconds or poll the status every few seconds
+    // Wait for actor completion
     await waitForActorCompletion(runId);
 
     // Fetch dataset results after the actor completes
-    const datasetUrl = `https://api.apify.com/v2/datasets/${runId}/items?token=apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa`;
-    const datasetResponse = await fetch(datasetUrl);
+    const datasetUrl = `https://api.apify.com/v2/datasets/${runId}/items`;
+    const datasetResponse = await fetch(datasetUrl, {
+        headers: {
+            'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa'
+        }
+    });
     const dataset = await datasetResponse.json();
 
     loadingDiv.style.display = 'none';
 
     // Parse the dataset for Cover (image) and DownAddr (video download link)
-    const { Cover, DownAddr } = dataset[0];  // Assuming the first result contains the info
+    const { Cover, DownAddr } = dataset[0];
 
     // Display the result in the HTML
     resultDiv.innerHTML = `
@@ -46,11 +60,15 @@ async function startDownload() {
 
 async function waitForActorCompletion(runId) {
     let isCompleted = false;
-    const apiUrl = `https://api.apify.com/v2/actor-runs/${runId}?token=apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa`;
+    const apiUrl = `https://api.apify.com/v2/actor-runs/${runId}`;
 
     // Poll every 5 seconds until the actor completes
     while (!isCompleted) {
-        const response = await fetch(apiUrl);
+        const response = await fetch(apiUrl, {
+            headers: {
+                'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa'
+            }
+        });
         const runInfo = await response.json();
 
         if (runInfo.data.status === 'SUCCEEDED') {
@@ -59,4 +77,4 @@ async function waitForActorCompletion(runId) {
             await new Promise(resolve => setTimeout(resolve, 5000));  // Wait 5 seconds
         }
     }
-}
+        }
