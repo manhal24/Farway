@@ -14,7 +14,7 @@ async function startDownload() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa' // Your API key
+            'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa'
         },
         body: JSON.stringify({
             "start_urls": [
@@ -36,29 +36,25 @@ async function startDownload() {
     // Wait for actor completion
     await waitForActorCompletion(runId);
 
-    // Extract dataset ID from the run info
-    const datasetId = data.data.defaultDatasetId;
-    
     // Fetch dataset results after the actor completes
-    const datasetUrl = `https://api.apify.com/v2/datasets/${datasetId}/items`;
+    const datasetUrl = `https://api.apify.com/v2/datasets/${runId}/items`;
     const datasetResponse = await fetch(datasetUrl, {
         headers: {
-            'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa' // Your API key
+            'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa'
         }
     });
     const dataset = await datasetResponse.json();
 
     loadingDiv.style.display = 'none';
 
-    // Parse the dataset for cover (image) and downAddr (video download link)
-    const cover = dataset[0].cover;
-    const downAddr = dataset[0].downAddr;
+    // Parse the dataset for Cover (image) and DownAddr (video download link)
+    const { cover, downAddr } = dataset[0];
 
     // Display the result in the HTML
     resultDiv.innerHTML = `
         <img src="${cover}" alt="Video cover" class="thumbnail" />
         <br />
-        <a href="${downAddr}" target="_blank" download>
+        <a href="${downAddr}" download="video.mp4">
             <button>Download Now</button>
         </a>
     `;
@@ -68,11 +64,11 @@ async function waitForActorCompletion(runId) {
     let isCompleted = false;
     const apiUrl = `https://api.apify.com/v2/actor-runs/${runId}`;
 
-    // Poll every 5 seconds until the actor completes
+    // Poll every 2 seconds until the actor completes
     while (!isCompleted) {
         const response = await fetch(apiUrl, {
             headers: {
-                'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa' // Your API key
+                'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa'
             }
         });
         const runInfo = await response.json();
@@ -80,7 +76,7 @@ async function waitForActorCompletion(runId) {
         if (runInfo.data.status === 'SUCCEEDED') {
             isCompleted = true;
         } else {
-            await new Promise(resolve => setTimeout(resolve, 5000));  // Wait 5 seconds
+            await new Promise(resolve => setTimeout(resolve, 2000));  // Wait 2 seconds
         }
     }
-            }
+}
