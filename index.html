@@ -3,139 +3,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Request Page</title>
+    <title>TikTok Video Downloader</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            text-align: center;
+            background-color: #f0f0f0;
+            color: #333;
+            margin: 0;
+            padding: 20px;
         }
-        #response {
-            white-space: pre-wrap;
-            margin-top: 20px;
-            border: 1px solid #ccc;
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        input[type="text"] {
+            width: calc(100% - 22px);
             padding: 10px;
-            background: #f9f9f9;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
-        #countdown {
-            font-size: 1.2em;
-            margin-top: 10px;
-            color: #ff0000;
+        button {
+            padding: 10px 20px;
+            background-color: #1da1f2;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0d95e8;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .result a {
+            text-decoration: none;
+            color: #1da1f2;
+            font-weight: bold;
         }
     </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TikTok Video Downloader</h1>
+        <p>Enter the TikTok video URL below to download the video without a watermark.</p>
+        <input type="text" id="tiktokUrl" placeholder="Enter TikTok URL">
+        <button onclick="downloadVideo()">Download Video</button>
+        <div class="result" id="result"></div>
+    </div>
+
     <script>
-        let countdownInterval;
-        let runId = '';
-
-        function startCountdown(duration, display) {
-            let timer = duration, minutes, seconds;
-            countdownInterval = setInterval(function () {
-                minutes = parseInt(timer / 60, 10);
-                seconds = parseInt(timer % 60, 10);
-
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-
-                display.textContent = minutes + ":" + seconds;
-
-                if (--timer < 0) {
-                    timer = 0;
-                    clearInterval(countdownInterval);
-                    display.textContent = "Time's up!";
-                }
-            }, 1000);
-        }
-
-        async function sendRequest() {
-            const domain = document.getElementById('domain').value;
-            const responseContainer = document.getElementById('response');
-            const countdownDisplay = document.getElementById('countdown');
-
-            // Start countdown for 120 seconds
-            startCountdown(120, countdownDisplay);
+        async function downloadVideo() {
+            const url = document.getElementById('tiktokUrl').value;
+            if (!url) {
+                alert('Please enter a TikTok URL');
+                return;
+            }
 
             try {
-                const runResponse = await fetch('https://api.apify.com/v2/acts/lZdFhlvdfg7BFJluY/runs?waitForFinish=120', {
+                const response = await fetch(`https://ssstik.io/abc?url=dl`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer apify_api_hqifBKQQeQff0Wx5GpYlheHtBA3IYw2MCNJ2'
+                        'HX-Request': 'true',
+                        'HX-Trigger': '_gcaptcha_pt',
+                        'HX-Target': 'target',
+                        'HX-Current-URL': 'https://ssstik.io/en-1',
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
                     },
-                    body: JSON.stringify({ input: { domain } })
+                    body: new URLSearchParams({
+                        id: encodeURIComponent(url),
+                        locale: 'en',
+                        tt: 'RDY5Z04z'
+                    })
                 });
 
-                const runResult = await runResponse.json();
-                runId = runResult.data.id;
-
-                // Polling for run completion
-                pollRunStatus();
-            } catch (error) {
-                clearInterval(countdownInterval);  // Stop countdown on error
-                responseContainer.textContent = `Error: ${error.message}`;
-            }
-        }
-
-        async function pollRunStatus() {
-            const responseContainer = document.getElementById('response');
-            const countdownDisplay = document.getElementById('countdown');
-
-            const interval = 5000;  // Poll every 5 seconds
-            let timer = 120;  // Total time to poll (in seconds)
-
-            const statusInterval = setInterval(async () => {
-                try {
-                    const statusResponse = await fetch(`https://api.apify.com/v2/acts/lZdFhlvdfg7BFJluY/runs/${runId}`, {
-                        headers: {
-                            'Authorization': 'Bearer apify_api_hqifBKQQeQff0Wx5GpYlheHtBA3IYw2MCNJ2'
-                        }
-                    });
-
-                    const statusResult = await statusResponse.json();
-
-                    if (statusResult.data.status === 'COMPLETED') {
-                        clearInterval(statusInterval);
-                        clearInterval(countdownInterval);
-
-                        // Fetch dataset data
-                        fetchDatasetData(statusResult.data.defaultDatasetId);
-                    } else if (timer <= 0) {
-                        clearInterval(statusInterval);
-                        clearInterval(countdownInterval);
-                        responseContainer.textContent = "Request timed out.";
-                    }
-
-                    timer -= (interval / 1000);  // Reduce timer
-                } catch (error) {
-                    clearInterval(statusInterval);
-                    clearInterval(countdownInterval);
-                    responseContainer.textContent = `Error: ${error.message}`;
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
-            }, interval);
-        }
 
-        async function fetchDatasetData(datasetId) {
-            const responseContainer = document.getElementById('response');
+                const text = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(text, 'text/html');
+                const downloadLink = doc.querySelector('.result_overlay_buttons .download_link.without_watermark');
 
-            try {
-                const datasetResponse = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items`, {
-                    headers: {
-                        'Authorization': 'Bearer apify_api_hqifBKQQeQff0Wx5GpYlheHtBA3IYw2MCNJ2'
-                    }
-                });
-
-                const datasetResult = await datasetResponse.json();
-                responseContainer.textContent = JSON.stringify(datasetResult, null, 2);
+                if (downloadLink) {
+                    document.getElementById('result').innerHTML = `
+                        <p><a href="${downloadLink.href}" download>Click here to download the video without watermark</a></p>
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = '<p>No download link found. Please try another URL.</p>';
+                }
             } catch (error) {
-                responseContainer.textContent = `Error: ${error.message}`;
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = '<p>An error occurred. Please try again.</p>';
             }
         }
     </script>
-</head>
-<body>
-    <h1>API Request Page</h1>
-    <label for="domain">Enter Domain:</label>
-    <input type="text" id="domain" name="domain" required>
-    <button onclick="sendRequest()">Send Request</button>
-    <div id="countdown">02:00</div>
-    <pre id="response"></pre>
 </body>
 </html>
