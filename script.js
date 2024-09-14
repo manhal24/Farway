@@ -14,7 +14,7 @@ async function startDownload() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa'
+            'Authorization': 'Bearer YOUR_API_KEY' // Replace with your Apify API key
         },
         body: JSON.stringify({
             "start_urls": [
@@ -36,11 +36,14 @@ async function startDownload() {
     // Wait for actor completion
     await waitForActorCompletion(runId);
 
+    // Extract dataset ID from the run info
+    const datasetId = data.data.defaultDatasetId;
+    
     // Fetch dataset results after the actor completes
-    const datasetUrl = `https://api.apify.com/v2/datasets/${runId}/items`;
+    const datasetUrl = `https://api.apify.com/v2/datasets/${datasetId}/items`;
     const datasetResponse = await fetch(datasetUrl, {
         headers: {
-            'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa'
+            'Authorization': 'Bearer YOUR_API_KEY' // Replace with your Apify API key
         }
     });
     const dataset = await datasetResponse.json();
@@ -56,7 +59,7 @@ async function startDownload() {
         <img src="${cover}" alt="Video cover" class="thumbnail" />
         <br />
         <a href="${downAddr}" target="_blank" download>
-            <button>Download Video</button>
+            <button>Download Now</button>
         </a>
     `;
 }
@@ -69,7 +72,7 @@ async function waitForActorCompletion(runId) {
     while (!isCompleted) {
         const response = await fetch(apiUrl, {
             headers: {
-                'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa'
+                'Authorization': 'Bearer YOUR_API_KEY' // Replace with your Apify API key
             }
         });
         const runInfo = await response.json();
@@ -80,5 +83,4 @@ async function waitForActorCompletion(runId) {
             await new Promise(resolve => setTimeout(resolve, 5000));  // Wait 5 seconds
         }
     }
-        }
-    
+}
