@@ -14,7 +14,7 @@ async function startDownload() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer YOUR_API_KEY' // Replace with your Apify API key
+            'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa' // Your API key
         },
         body: JSON.stringify({
             "start_urls": [
@@ -43,7 +43,7 @@ async function startDownload() {
     const datasetUrl = `https://api.apify.com/v2/datasets/${datasetId}/items`;
     const datasetResponse = await fetch(datasetUrl, {
         headers: {
-            'Authorization': 'Bearer YOUR_API_KEY' // Replace with your Apify API key
+            'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa' // Your API key
         }
     });
     const dataset = await datasetResponse.json();
@@ -72,7 +72,7 @@ async function waitForActorCompletion(runId) {
     while (!isCompleted) {
         const response = await fetch(apiUrl, {
             headers: {
-                'Authorization': 'Bearer YOUR_API_KEY' // Replace with your Apify API key
+                'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa' // Your API key
             }
         });
         const runInfo = await response.json();
@@ -83,4 +83,4 @@ async function waitForActorCompletion(runId) {
             await new Promise(resolve => setTimeout(resolve, 5000));  // Wait 5 seconds
         }
     }
-}
+        }
