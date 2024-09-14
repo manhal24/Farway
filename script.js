@@ -1,3 +1,4 @@
+
 async function startDownload() {
     const tiktokUrl = document.getElementById('tiktokUrl').value;
     const resultDiv = document.getElementById('result');
@@ -17,7 +18,9 @@ async function startDownload() {
             'Authorization': 'Bearer apify_api_pF306vaVsrrkxbvFybpHEUyx8fHKk01XKgoa'
         },
         body: JSON.stringify({
-            "startUrls": [{ "url": tiktokUrl }]
+            "start_urls": [
+                { "url": tiktokUrl }
+            ]
         }),
     });
 
@@ -77,4 +80,4 @@ async function waitForActorCompletion(runId) {
             await new Promise(resolve => setTimeout(resolve, 5000));  // Wait 5 seconds
         }
     }
-        }
+            }
