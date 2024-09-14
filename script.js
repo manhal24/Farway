@@ -1,4 +1,3 @@
-
 async function startDownload() {
     const tiktokUrl = document.getElementById('tiktokUrl').value;
     const resultDiv = document.getElementById('result');
@@ -48,14 +47,15 @@ async function startDownload() {
 
     loadingDiv.style.display = 'none';
 
-    // Parse the dataset for Cover (image) and DownAddr (video download link)
-    const { Cover, DownAddr } = dataset[0];
+    // Parse the dataset for cover (image) and downAddr (video download link)
+    const cover = dataset[0].cover;
+    const downAddr = dataset[0].downAddr;
 
     // Display the result in the HTML
     resultDiv.innerHTML = `
-        <img src="${Cover}" alt="Video cover" class="thumbnail" />
+        <img src="${cover}" alt="Video cover" class="thumbnail" />
         <br />
-        <a href="${DownAddr}" target="_blank" download>
+        <a href="${downAddr}" target="_blank" download>
             <button>Download Video</button>
         </a>
     `;
@@ -80,4 +80,5 @@ async function waitForActorCompletion(runId) {
             await new Promise(resolve => setTimeout(resolve, 5000));  // Wait 5 seconds
         }
     }
-            }
+        }
+    
